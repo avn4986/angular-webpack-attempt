@@ -25,10 +25,7 @@ module.exports = {
   },
   resolve: {
     extensions: ['.ts', '.js'],
-    alias: {
-	  ...rxPaths(),
-      '@src': resolve(`${__dirname}/../src`)
-    }
+    alias: rxPaths()
   },
   node: false,
   performance: {
@@ -84,13 +81,13 @@ module.exports = {
     ]
   },
   plugins: [
-	new WebpackBuildNotifierPlugin({
+    new WebpackBuildNotifierPlugin({
       title: "Angular Webpack Build"
     }),
-	new EnvironmentPlugin({
-	  NODE_ENV: 'development',
-	  DEBUG: true
-	}),
+    new EnvironmentPlugin({
+      NODE_ENV: 'development',
+      DEBUG: true
+    }),
     new webpack.NamedModulesPlugin(),
     new webpack.NamedChunksPlugin(),
     new webpack.HotModuleReplacementPlugin(),
@@ -109,7 +106,7 @@ module.exports = {
       nameLazyFiles: true,
       tsConfigPath: resolve(`${__dirname}/../tsconfig.json`),
       skipCodeGeneration: true,
-	  hostReplacementPaths: {
+      hostReplacementPaths: {
         [resolve('src/environments/environment.ts')]: resolve('src/environments/environment.dev.ts')
       }
     }),
@@ -121,7 +118,10 @@ module.exports = {
       {
         from: `${__dirname}/../src/static`,
         to: 'static'
-      }
+      },
+	  {
+		from: `${__dirname}/../favicon.ico`,
+	  }
     ])
   ]
 };

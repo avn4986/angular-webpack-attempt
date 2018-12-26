@@ -1,3 +1,4 @@
+//https://webpack.js.org/configuration/devtool
 const CompressionPlugin = require('compression-webpack-plugin');
 const {resolve} = require('path');
 const rxPaths = require('rxjs/_esm5/path-mapping');
@@ -10,13 +11,12 @@ const {CleanCssWebpackPlugin} = require('@angular-devkit/build-angular/src/angul
 const {AngularCompilerPlugin} = require('@ngtools/webpack');
 const {IndexHtmlWebpackPlugin} = require('@angular-devkit/build-angular/src/angular-cli-files/plugins/index-html-webpack-plugin');
 const {SuppressExtractedTextChunksWebpackPlugin} = require('@angular-devkit/build-angular/src/angular-cli-files/plugins/suppress-entry-chunks-webpack-plugin');
-const WebpackBuildNotifierPlugin = require('webpack-build-notifier');
 const {HashedModuleIdsPlugin, DefinePlugin, EnvironmentPlugin} = require('webpack');
 const PROD = 'production';
 
 module.exports = {
   mode: PROD,
-  devtool: 'source-map',
+  devtool: false,
   entry: {
     main: `${__dirname}/../src/main.ts`,
     polyfills: `${__dirname}/../src/polyfills.ts`,
@@ -28,10 +28,7 @@ module.exports = {
   },
   resolve: {
     extensions: ['.ts', '.js'],
-	alias: {
-	  ...rxPaths(),
-      '@src': resolve(`${__dirname}/../src`)
-    }
+    alias: rxPaths()
   },
   node: false,
   performance: {
@@ -142,13 +139,10 @@ module.exports = {
   },
 
   plugins: [
-	new WebpackBuildNotifierPlugin({
-      title: "Angular Webpack Build"
-    }),
     new EnvironmentPlugin({
-	  NODE_ENV: 'production',
-	  DEBUG: false
-	}),
+      NODE_ENV: 'production',
+      DEBUG: false
+    }),
     new IndexHtmlWebpackPlugin({
       input: `${__dirname}/../src/index.html`,
       output: 'index.html',
@@ -178,10 +172,13 @@ module.exports = {
       {
         from: `${__dirname}/../src/static`,
         to: 'static'
-      }
+      }, 
+	  {
+		from: `${__dirname}/../favicon.ico`,
+	  }
     ]),
     new CompressionPlugin({
-      cache: true,
+      cache: false,
       threshold: 10240,
       minRatio: 0.8
     })

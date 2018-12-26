@@ -2,9 +2,10 @@ const config = require("../build-config");
 const path = require("path");
 const express = require("express");
 const webpack = require("webpack");
+const favicon = require('express-favicon');
 const webpackConfig = process.env.NODE_ENV === 'production'
-    ? require('../build/webpack.prod')
-    : require('../build/webpack.dev');
+    ? require(`${__dirname}/webpack.prod`)
+    : require(`${__dirname}/webpack.dev`);
 
 // default port where dev server listens for incoming traffic
 const port = process.env.PORT || config.dev.port;
@@ -32,6 +33,12 @@ app.use(devMiddleware);
 // enable hot-reload and state-preserving
 // compilation error display
 app.use(hotMiddleware);
+
+app.use(favicon(__dirname + '/../favicon.ico'));
+
+app.use('/', (req, res) => {
+  res.render('index', { title: 'ejs' });
+});
 
 // make app listen on specified port
 module.exports = app.listen(port, function (err) {
