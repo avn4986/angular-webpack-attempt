@@ -1,5 +1,4 @@
 //https://webpack.js.org/configuration/devtool
-const CompressionPlugin = require('compression-webpack-plugin');
 const {resolve} = require('path');
 const rxPaths = require('rxjs/_esm5/path-mapping');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
@@ -11,9 +10,9 @@ const {CleanCssWebpackPlugin} = require('@angular-devkit/build-angular/src/angul
 const {AngularCompilerPlugin} = require('@ngtools/webpack');
 const {IndexHtmlWebpackPlugin} = require('@angular-devkit/build-angular/src/angular-cli-files/plugins/index-html-webpack-plugin');
 const {SuppressExtractedTextChunksWebpackPlugin} = require('@angular-devkit/build-angular/src/angular-cli-files/plugins/suppress-entry-chunks-webpack-plugin');
-const {HashedModuleIdsPlugin, DefinePlugin, EnvironmentPlugin} = require('webpack');
+const {HashedModuleIdsPlugin, EnvironmentPlugin} = require('webpack');
 const PROD = 'production';
-
+const buildRoot = './dist';
 module.exports = {
   mode: PROD,
   devtool: false,
@@ -23,8 +22,9 @@ module.exports = {
     styles: `${__dirname}/../src/static/styles/main.css`
   },
   output: {
-    path: resolve('./dist'),
+    path: resolve(buildRoot),
     filename: '[name].js',
+    chunkFilename: '[name].bundle.js'
   },
   resolve: {
     extensions: ['.ts', '.js'],
@@ -172,15 +172,27 @@ module.exports = {
       {
         from: `${__dirname}/../src/static`,
         to: 'static'
-      }, 
-	  {
-		from: `${__dirname}/../favicon.ico`,
-	  }
-    ]),
-    new CompressionPlugin({
-      cache: false,
-      threshold: 10240,
-      minRatio: 0.8
-    })
+      },
+      {
+        from: `${__dirname}/../favicon.ico`,
+      },
+      {
+        from: `${__dirname}/server.js`,
+      },
+      {
+        from: `${__dirname}/../pack*.json`,
+        transform: (content) => {
+          let parsedContent;
+          try {
+            parsedContent = JSON.parse(content.toString());
+            delete parsedContent['devDependencies']
+          } catch (err) {
+            console.error('Failed to modify package.json', err);
+            parsedContent = content.toString()
+          }
+          return JSON.stringify(parsedContent)
+        }
+      }
+    ])
   ]
 };

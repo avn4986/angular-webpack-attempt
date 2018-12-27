@@ -1,51 +1,50 @@
 const config = require("../build-config");
-const path = require("path");
 const express = require("express");
-const webpack = require("webpack");
 const favicon = require('express-favicon');
-const webpackConfig = process.env.NODE_ENV === 'production'
-    ? require(`${__dirname}/webpack.prod`)
-    : require(`${__dirname}/webpack.dev`);
-
-// default port where dev server listens for incoming traffic
+const compression = require('compression');
+const currentEnvironment = process.env.NODE_ENV || 'development';
+const staticPath = currentEnvironment === 'production' ? `${__dirname}/../static` : `${__dirname}/../src/static`;
 const port = process.env.PORT || config.dev.port;
-
-// create the express app
 const app = express();
 
-// insert the config for webpack
-const compiler = webpack(webpackConfig);
-
-// configure the webpack-dev-middleware
-const devMiddleware = require("webpack-dev-middleware")(compiler, {
-  publicPath: webpackConfig.output.publicPath,
-  quiet: true
-});
-
-// enable the hot middleware
-const hotMiddleware = require("webpack-hot-middleware")(compiler, {
-  heartbeat: 2000
-});
-
-// serve webpack bundle output
-app.use(devMiddleware);
-
-// enable hot-reload and state-preserving
-// compilation error display
-app.use(hotMiddleware);
-
+app.use(compression());
 app.use(favicon(__dirname + '/../favicon.ico'));
+app.use('/static', express.static(staticPath));
+app.set('view engine', 'ejs');
 
-app.use('/', (req, res) => {
-  res.render('index', { title: 'ejs' });
-});
+if (currentEnvironment === 'production') {
+  const engine = require('consolidate');
+  app.engine('html', engine.mustache);
+  app.set('views', __dirname);
+  app.get('*.*', express.static(__dirname));
+  app.use('/', (req, res) => {
+    res.render('index.html', {title: 'ejs'});
+  });
+} else {
+  const webpack = require("webpack");
+  const webpackConfig = currentEnvironment === 'production' ? require(`${__dirname}/webpack.prod`) : require(`${__dirname}/webpack.dev`);
+  const compiler = webpack(webpackConfig);
+  const devMiddleware = require("webpack-dev-middleware")(compiler, {
+    publicPath: webpackConfig.output.publicPath,
+    quiet: true
+  });
+  const hotMiddleware = require("webpack-hot-middleware")(compiler, {
+    heartbeat: 2000
+  });
+  app.use(devMiddleware);
+  app.use(hotMiddleware);
+  app.use(require('connect-history-api-fallback')())
+}
 
-// make app listen on specified port
+/***
+ * Regardless of the environment the application server
+ * should start.
+ * @type {http.Server}
+ */
 module.exports = app.listen(port, function (err) {
   if (err) {
     console.log(err);
     return
   }
-
-  console.log(`Environment: ${process.env.NODE_ENV} Listening on: http://localhost:${port}`)
+  console.log(`Environment: ${currentEnvironment} Listening on: http://localhost:${port}`)
 });

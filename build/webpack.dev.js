@@ -1,3 +1,4 @@
+// https://webpack.js.org/guides/code-splitting/
 const {resolve} = require('path');
 const webpack = require('webpack');
 const rxPaths = require('rxjs/_esm5/path-mapping');
@@ -22,6 +23,7 @@ module.exports = {
   output: {
     path: resolve('./dist'),
     filename: '[name].js',
+    chunkFilename: '[name].bundle.js'
   },
   resolve: {
     extensions: ['.ts', '.js'],
@@ -29,7 +31,7 @@ module.exports = {
   },
   node: false,
   performance: {
-    hints: false,
+    hints: 'warning',
   },
   module: {
     rules: [
@@ -119,9 +121,9 @@ module.exports = {
         from: `${__dirname}/../src/static`,
         to: 'static'
       },
-	  {
-		from: `${__dirname}/../favicon.ico`,
-	  }
+      {
+        from: `${__dirname}/../favicon.ico`,
+      }
     ])
   ]
 };
