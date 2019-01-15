@@ -1,4 +1,5 @@
-//https://webpack.js.org/configuration/devtool
+// https://webpack.js.org/configuration/devtool
+// https://medium.com/@selvarajchinnasamyks/angular-7-unit-testing-97dccfdca900
 const {resolve} = require('path');
 const rxPaths = require('rxjs/_esm5/path-mapping');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
@@ -27,8 +28,11 @@ module.exports = {
     chunkFilename: '[name].bundle.js'
   },
   resolve: {
-    extensions: ['.ts', '.js'],
-    alias: rxPaths()
+    extensions: ['.ts', '.js', '.css'],
+    alias: {
+      ...rxPaths(),
+      '~': resolve('node_modules'),
+    }
   },
   node: false,
   performance: {

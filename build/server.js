@@ -1,17 +1,28 @@
-const config = require("../build-config");
 const express = require("express");
 const favicon = require('express-favicon');
+const proxy = require('express-http-proxy');
 const compression = require('compression');
 const currentEnvironment = process.env.NODE_ENV || 'development';
-const staticPath = currentEnvironment === 'production' ? `${__dirname}/../static` : `${__dirname}/../src/static`;
-const port = process.env.PORT || config.dev.port;
+const staticPath = currentEnvironment === 'production' ? `${__dirname}/static` : `${__dirname}/../src/static`;
+const port = process.env.PORT || 3000;
 const app = express();
 
 app.use(compression());
-app.use(favicon(__dirname + '/../favicon.ico'));
+app.use(favicon(currentEnvironment === 'production' ? `${__dirname}/favicon.ico` : `${__dirname}/../favicon.ico`));
 app.use('/static', express.static(staticPath));
 app.set('view engine', 'ejs');
 
+Object.keys(process.env).filter(key => key.startsWith('REV_PROXY_URL_'))
+    .forEach(key => {
+      try {
+        let config = JSON.parse(process.env[key]);
+        console.info(`Adding Configuration for forward ${config['path']} traffic to -> ${config['url']}`);
+        app.use(config['path'], proxy(config['url']));
+      } catch (err) {
+        console.error('Failed to add reverse proxy.', err)
+      }
+    });
+	
 if (currentEnvironment === 'production') {
   const engine = require('consolidate');
   app.engine('html', engine.mustache);
